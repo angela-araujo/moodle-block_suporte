@@ -23,12 +23,6 @@
  * 
  */
 
-header('Access-Control-Allow-Origin: https://teste.ccead.puc-rio.br');
-header('Access-Control-Allow-Origin: https://ead.puc-rio.br');
-header('Access-Control-Allow-Origin: https://cce.puc-rio.br');
-
-
-
 class block_suporte extends block_base {
     
     public function init() {
@@ -43,15 +37,17 @@ class block_suporte extends block_base {
           return $this->content;
         }
         
-        
-        
     	$nome = $USER->firstname;
     	$sobrenome = $USER->lastname;
     	$email = $USER->email;
     	$matricula = $USER->username;
         $curso = ($COURSE->id > 1) ? $COURSE->fullname : 'Página Inicial';
-        $reg_categoria = $DB->get_record('course_categories', array('id' => $COURSE->category));
-    	$origem = $reg_categoria->name;
+        $origem = '';
+        
+        if ($COURSE->category <> 0) {
+            $reg_categoria = $DB->get_record('course_categories', array('id' => $COURSE->category));        
+            $origem = $reg_categoria->name;
+        }       
     	
     	$siteatendimento = 'https://atendimento.ccead.puc-rio.br/index.php?a=add';
     	

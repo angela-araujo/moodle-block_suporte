@@ -71,24 +71,23 @@ class block_suporte extends block_base {
         } else {
             
             $urlMyTickets = new moodle_url('/blocks/suporte/mytickets.php');
+            $textNewTicket = get_string('text_newticket', 'block_suporte');
+            $textHesk = get_string('text_mytickets', 'block_suporte');
             
             $this->content->text   = '
-            <div class="text-center" >
-                <p style="font-size:0.9em">Para suporte técnico no uso do ambiente, clique abaixo.</p>
+            <div class="" >
                 <form id="formsuporte" action="' . $siteatendimento . '" method="POST" target="_blank">
                     <input type="hidden" id="moodle_fullname" name="moodle_fullname" value="' . $nome . " " . $sobrenome .'"/>
                     <input type="hidden" id="moodle_email" name="moodle_email" value="'. $email .'"/>
                     <input type="hidden" id="moodle_username" name="moodle_username" value="'. $matricula .'"/>
                     <input type="hidden" id="moodle_curso" name="moodle_curso" value="'. $curso .'"/>
                     <input type="hidden" id="moodle_origem" name="moodle_origem" value="'. $origem .'"/>
-                    <input class="btn btn-primary btn-xs" type="submit" value="Atendimento"/>
+                    <input class="btn btn-primary btn-xs" type="submit" value="'.$textNewTicket.'"/>
                 </form>
                 <br>
-                <form id="formtickets" action="' . $urlMyTickets . '" method="POST" target="_self">
-                     <input type="hidden" id="moodle_username" name="moodle_username" value="'. $matricula .'"/>
-                     <input type="hidden" id="moodle_email" name="moodle_email" value="'. $email .'"/>
-                     <input class="btn btn-primary btn-xs" type="submit" value="Ver meus Atendimentos" />
-                </form>
+                <div class="" >
+                <a href="'.$urlMyTickets.'" class="" target="_blank">'.$textHesk.'</a>                      
+            </div>
             </div>';
             $this->content->footer = '';
         }

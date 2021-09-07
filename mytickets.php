@@ -22,13 +22,18 @@
  */
 require ('../../config.php');
 
+define('TICKET_LIDO', '1');
+define('TICKET_NAO_LIDO', '0');
+define('TICKETS_BY_PAGE', 10);
+
 global $DB, $USER, $COURSE, $OUTPUT, $PAGE, $ATENDIMENTODB;
 
 $email = $USER->email;
+$page = optional_param('page', 0, PARAM_INT);
 
 $config = get_config('block_suporte');
 
-$prefix = 'hesk';
+$prefix = 'hesk_';
 
 $dbclass = get_class($DB);
 $ATENDIMENTODB = new $dbclass();
@@ -47,31 +52,55 @@ echo $OUTPUT->header();
 
 echo "<h1>Histórico de atendimento</h1><br>";
 
-$sql = "SELECT t.id, t.trackid,
-        	t.status,
-        	CASE 
-        		when t.status = '0' then 'Novo' 
-        		when t.status = '1' then 'Aguardando resposta da equipe'
-        		when t.status = '2' then 'Aguardando resposta do usuário'
-        		when t.status = '3' then 'Resolvido'
-        		when t.status = '4' then 'Em progresso'
-        		when t.status = '5' then 'Em espera'
-        	END AS statusdesc,
-        	t.subject, t.dt data_abertura,
-        	MAX(r.id) reply_id, 
-        	MAX(r.dt) ultima_resposta, 
-        	COUNT(r.replyto) total_resposta
-        FROM hesk_tickets t
-        	LEFT JOIN hesk_replies r ON r.replyto = t.id
-        WHERE t.email = :email 
-        GROUP BY t.id
-        ORDER BY t.id DESC;";
+$sql = "
+        SELECT t.id, 
+               t.trackid,
+               t.status,
+               CASE WHEN t.status = '0' THEN 'Novo' 
+                    WHEN t.status = '1' THEN 'Aguardando resposta da equipe'
+                    WHEN t.status = '2' THEN 'Aguardando resposta do usuário'
+                    WHEN t.status = '3' THEN 'Resolvido'
+                    WHEN t.status = '4' THEN 'Em progresso'
+                    WHEN t.status = '5' THEN 'Em espera'   
+               END AS statusdesc,
+               t.subject,
+               t.dt data_abertura,
+               MAX(r.id) reply_id,
+               MAX(r.dt) ultima_resposta,
+               COUNT(r.replyto) total_resposta
+          FROM {tickets} t
+     LEFT JOIN {replies} r ON r.replyto = t.id
+         WHERE t.email = :email
+      GROUP BY 1,2,3,4,5,6
+      ORDER BY t.id DESC ";
 
 $tickets = $ATENDIMENTODB->get_records_sql($sql, array('email' => $email));
 
+$total_tickets = count($tickets);
+
+$tickets = $ATENDIMENTODB->get_records_sql($sql, array('email' => $email), $page*TICKETS_BY_PAGE, TICKETS_BY_PAGE);
+
 if ($tickets) {
     
-    echo '<p>'. count($tickets) . ' atendimentos</p>';
+    $pagingbar = new paging_bar(
+        $total_tickets,
+        $page,
+        TICKETS_BY_PAGE,
+        new moodle_url('/blocks/suporte/mytickets.php', ['page' => $page]));
+    
+    echo $OUTPUT->render($pagingbar);
+    
+    if (property_exists($USER, 'realuser')) {
+        $msg_alerta_admin = get_string('alerta_usuario_admin', 'block_suporte');
+          
+        echo '<div class="alert alert-warning alert-dismissible fade show" role="alert">'. $msg_alerta_admin .          
+          '<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>';
+    }
+    
+    echo '<p>'. $total_tickets . ' atendimentos</p>';
 
     echo '<div class="table-responsive">
     <table class="table table-striped">
@@ -88,21 +117,30 @@ if ($tickets) {
     
     foreach ($tickets as $row) {
         
-        $sql = "SELECT r.name, r.dt data_resposta, r.read
+        $sql = "SELECT r.id, r.name, r.dt data_resposta, r.read, r.staffid
                   FROM hesk_replies r
                  WHERE r.id = :reply_id ";
         $reply = $ATENDIMENTODB->get_record_sql($sql, array('reply_id' => $row->reply_id));
         $dt_ultima_resposta = '';
         $ultimo_remetente = '';
+        $url_ticket = $config->atendimentourl . '/ticket.php?track=' . $row->trackid;
+        $css_link_admin = '';
         
         if ($reply) {
             $dt_ultima_resposta = $reply->data_resposta;
             $ultimo_remetente = $reply->name;
+            
+            if ($reply->read == TICKET_NAO_LIDO and $reply->staffid != 0) {
+                $css_link_admin = 'class="font-weight-bold"';
+            }
+            
+            // Se o ticket estiver nao lido e o usuario estiver acessando como.
+            if ($reply->read == TICKET_NAO_LIDO and $reply->staffid != 0 and property_exists($USER, 'realuser')) {
+                
+                $url_ticket = $config->atendimentourl . '/admin/admin_ticket.php?track=' . $row->trackid;
+                //$css_link_admin = 'class="font-italic font-weight-bold"';
+            }
         }
-        
-        //$url = 'https://atendimento.ccead.puc-rio.br/ticket.php?track=JT4-AS9-DY98&Refresh=44030';
-        
-        $url_atendimento = $config->atendimentourl . '/ticket.php?track=' . $row->trackid;
         
         switch ($row->status) {
             case '0':
@@ -121,9 +159,9 @@ if ($tickets) {
                 $css = '';
         }
         
-        echo "<tr>
+        echo "<tr $css_link_admin>
                   <td>{$row->trackid} (Número do ticket: {$row->id})</td>
-                  <td><a href='{$url_atendimento}' target='_blank'>{$row->subject}</a></td>
+                  <td><a href='{$url_ticket}' target='_blank'>{$row->subject}</a></td>
                   <td>{$row->data_abertura}</td>
                   <td>{$row->total_resposta}</td>
                   <td>{$dt_ultima_resposta}</td>

@@ -172,8 +172,7 @@ if ($tickets) {
     
     echo "</table></div>";
 } else {
-    echo '<p class="">Ainda não há atendimento aberto por você</p>';
-    
+    echo '<p class="">'. get_string('text_no_tickets', 'block_suporte', $email).'</p>';
 }
 
 echo $OUTPUT->footer();

@@ -20,4 +20,5 @@ $string['config_headingaccess'] = 'Atendimentos';
 
 // Mytickets.
 $string['alerta_usuario_admin'] = '<strong>Aviso:</strong> Você está acessando como um outro usuário, por isso os tickets ainda não lidos serão abertos como admin para não alterar o status de leitura do mesmo.';
+$string['text_no_tickets'] = 'Ainda não há atendimento aberto por você com o email {$a}';
 $string['text_mytickets'] = 'Ver histórico de atendimentos';

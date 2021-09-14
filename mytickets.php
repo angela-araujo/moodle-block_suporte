@@ -159,12 +159,15 @@ if ($tickets) {
                 $css = '';
         }
         
+        $data_abertura = new DateTime($row->data_abertura);
+        $data_resposta = new DateTime($dt_ultima_resposta);
+        
         echo "<tr $css_link_admin>
                   <td>{$row->trackid} (Número do ticket: {$row->id})</td>
                   <td><a href='{$url_ticket}' target='_blank'>{$row->subject}</a></td>
-                  <td>{$row->data_abertura}</td>
+                  <td>{$data_abertura->format('d-m-Y H:i:s')}</td>
                   <td>{$row->total_resposta}</td>
-                  <td>{$dt_ultima_resposta}</td>
+                  <td>{$data_resposta->format('d-m-Y H:i:s')}</td>
                   <td>{$ultimo_remetente}</td>
                   <td {$css}>{$row->statusdesc}</td>
         </tr>";

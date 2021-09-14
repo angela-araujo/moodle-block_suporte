@@ -86,7 +86,7 @@ class block_suporte extends block_base {
                 </form>
                 <br>
                 <div class="" >
-                <a href="'.$urlMyTickets.'" class="" target="_blank">'.$textHesk.'</a>                      
+                <a href="'.$urlMyTickets.'" class="" target="_self">'.$textHesk.'</a>                      
             </div>
             </div>';
             $this->content->footer = '';

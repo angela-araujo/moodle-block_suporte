@@ -75,7 +75,7 @@ class block_suporte extends block_base {
             $textHesk = get_string('text_mytickets', 'block_suporte');
             
             $this->content->text   = '
-            <div class="" >
+            <div class="text-center" >
                 <form id="formsuporte" action="' . $siteatendimento . '" method="POST" target="_blank">
                     <input type="hidden" id="moodle_fullname" name="moodle_fullname" value="' . $nome . " " . $sobrenome .'"/>
                     <input type="hidden" id="moodle_email" name="moodle_email" value="'. $email .'"/>
@@ -85,7 +85,7 @@ class block_suporte extends block_base {
                     <input class="btn btn-primary btn-xs" type="submit" value="'.$textNewTicket.'"/>
                 </form>
                 <br>
-                <div class="" >
+                <div class="text-left" >
                 <a href="'.$urlMyTickets.'" class="" target="_self">'.$textHesk.'</a>                      
             </div>
             </div>';
